@@ -51,17 +51,15 @@ The following features are planned for future releases:
 - Text comments.
 - Annotation management interface for selective storage cleanup, annotation file import/export, and annotation transfer between PDF files.
 
-
 ## Implementation Questions
 
-Q: Why there is no support for Firefox or Safari?
-   A: The original extension uses the sandbox key in the manifest.json file, which is only supported by Chromium-based browsers. Firefox and Safari do not support this key, so the extension cannot be installed on those browsers. [[MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_security_policy#browser_compatibility)]
+Q: Why there is no support for Firefox or Safari?\
+A: The original extension uses the sandbox key in the manifest.json file, which is only supported by Chromium-based browsers. Firefox and Safari do not support this key, so the extension cannot be installed on those browsers. [[MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_security_policy#browser_compatibility)]
 
-Q: Why is the code of the original extension included in this one? Why not just make an extension that works with the original one?
-   A: Browser extensions are sandboxed and cannot directly interact with each other.
+Q: Why is the code of the original extension included in this one? Why not just make an extension that works with the original one?\
+A: Browser extensions are sandboxed and cannot directly interact with each other.
 
 If you find workarounds to these limitations, contributions are welcome!
-
 
 ## Support & Contributions
 
