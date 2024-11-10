@@ -27,16 +27,16 @@ Unfortunately, the original extension uses features unsupported by Firefox or Sa
 
 To install the extension, follow these steps:
 
-1. Uninstall the original Google Scholar PDF Reader extension if you have it installed.
-2. Download the latest release from [Releases](https://github.com/salcc/Scholar-PDF-Reader-with-Annotations/releases).
-3. Extract the ZIP file to a folder on your computer.
-4. Open the browser's extension management page:
+0. Uninstall the original Google Scholar PDF Reader extension if you have it installed.
+1. Download the latest release from [Releases](https://github.com/salcc/Scholar-PDF-Reader-with-Annotations/releases).
+2. Extract the ZIP file to a folder on your computer.
+3. Open the browser's extension management page:
    - Google Chrome: `chrome://extensions`
    - Microsoft Edge: `edge://extensions`
    - Brave: `brave://extensions`
    - Other Chromium-based browsers: check the browser's documentation for the extension management page.
-5. Enable developer mode if it is not already enabled (usually a toggle switch in the top right corner).
-6. Click "Load unpacked" and select the "extension" folder inside the extracted ZIP file.
+4. Enable developer mode if it is not already enabled (usually a toggle switch in the top right corner).
+5. Click "Load unpacked" and select the "extension" folder inside the extracted ZIP file.
 
 The extension should now be installed and ready to use!
 
