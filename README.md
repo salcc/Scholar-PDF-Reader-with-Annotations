@@ -28,7 +28,7 @@ Unfortunately, the original extension uses features that are not supported by Fi
 To install the extension, follow these steps:
 
 1. Uninstall the original Google Scholar PDF Reader extension if you have it installed.
-2. Download the latest release from the Releases section of this repository.
+2. Download the latest release from [Releases](https://github.com/salcc/Scholar-PDF-Reader-with-Annotations/releases).
 3. Extract the ZIP file to a folder on your computer.
 4. Open the browser's extension management page:
    - Google Chrome: `chrome://extensions`
