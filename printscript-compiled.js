@@ -1,0 +1,1 @@
+(function(){window.location.href.startsWith("blob:null/")&&document.contentType.toLowerCase()==="application/pdf"&&window.addEventListener("message",a=>{const b=window.origin;a.origin!==b?console.log('Same origin required: "'+a.origin+'" !== "'+b+'"'):a.data==="print"&&window.print()});}).call(this);
