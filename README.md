@@ -2,28 +2,28 @@
 
 This extension adds annotation capabilities to the Google Scholar PDF Reader extension. The extended features include:
 
-- Highlight text with a selection of colors (yellow, green, blue, pink, red).
-- Easily remove individual annotations or clear all at once. 
+- Highlight text with colors (yellow, green, blue, pink, red).
+- Easily remove individual annotations or clear them all at once. 
 
-Currently, annotations are stored in the browser's local storage and associated with each document URL. The PDF files themselves are not modified, but annotations persist across browser sessions.
+Currently, annotations are stored in the browser's local storage and associated with each document URL. The PDF files are not modified, but annotations persist across browser sessions.
 
 ![Screenshot](screenshot.png)
 
 The extension maintains all the functionality of the original Google Scholar PDF Reader:
 
-- Preview references as you read. Click the in-text citation to see a summary and find the PDF.  
-- Read faster with the AI outline. Get a quick overview and click on interesting bullets to jump within the paper.  
-- Click in-text figure mentions to see the figure and the back button to keep reading.  
-- Make it right for your eyes with light, dark, and night modes.  
-- Copy and paste common citation formats without leaving the paper.  
-- Save articles to your Scholar Library to read or cite later.  
+- Preview references as you read. Click the in-text citation to see a summary and find the PDF.
+- Read faster with the AI outline. Get a quick overview and click on interesting bullets to jump within the paper.
+- Click in-text figure mentions to see the figure and the back button to keep reading.
+- Make it right for your eyes with light, dark, and night modes.
+- Copy and paste common citation formats without leaving the paper.
+- Save articles to your Scholar Library to read or cite later.
 
 The annotation functionality is implemented through separate modules without modifying the original extension's code.
 
 ## Installation
 
 The extension works with all Chromium-based browsers, including Google Chrome, Microsoft Edge, and Brave.
-Unfortunately, the original extension uses features that are not supported by Firefox or Safari, so it cannot be installed on those browsers.
+Unfortunately, the original extension uses features unsupported by Firefox or Safari, so it cannot be installed on those browsers.
 
 To install the extension, follow these steps:
 
@@ -42,7 +42,7 @@ The extension should now be installed and ready to use!
 
 Note that the extension will not automatically update when new versions are released. To update the extension, download the latest release and repeat the installation steps. You can watch the GitHub repository to receive notifications of new releases.
 
-## Planned features
+## Planned Features
 
 The following features are planned for future releases:
 
@@ -65,7 +65,7 @@ If you find workarounds to these limitations, contributions are welcome!
 
 ## Support & Contributions
 
-For bug reports and feature suggestions, please open an issue on GitHub. Feel free to submit pull requests that enhance the extension.
+For bug reports and feature suggestions, please open an issue on GitHub. Feel free to also submit pull requests that enhance the extension.
 
 ## Disclaimer
 
