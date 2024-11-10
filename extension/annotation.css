@@ -1,0 +1,112 @@
+@font-face {
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    src: url('MaterialSymbolsOutlined.woff2') format('woff2');
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+#annotation-toolbar {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background-color: #333;
+    border-radius: 25px;
+    padding: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, border-color 0.3s;
+    position: relative;
+}
+
+.toolbar-button:hover,
+.toolbar-button.active {
+    background-color: #777;
+}
+
+.toolbar-button.active {
+    border-color: #fff;
+}
+
+.toolbar-button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #555;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    text-shadow: none;
+}
+
+.toolbar-button:hover::after {
+    opacity: 1;
+}
+
+#color-picker {
+    position: relative;
+}
+
+#color-popup {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #444;
+    border-radius: 10px;
+    padding: 10px;
+    z-index: 1001;
+}
+
+.color-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    margin: 5px auto;
+    cursor: pointer;
+    display: block;
+}
+
+.color-option.active {
+    border-color: #fff;
+}
+
+.pdf-highlight {
+    opacity: 0.5;
+}

@@ -1,12 +1,41 @@
 <!doctype html>
 <html>
 <head>
- <meta charset="utf-8">
- <title>Google Scholar Reader</title>
- <link rel="stylesheet" href="/reader-prod.css">
- <script src="/reader-compiled.js" defer></script>
+  <meta charset="utf-8">
+  <title>Google Scholar Reader with Annotations</title>
+  <link rel="stylesheet" href="/reader-prod.css">
+  <link rel="stylesheet" href="/annotation.css">
+  <script src="/reader-compiled.js" defer></script>
+  <script src="/annotation.js" defer></script>
 </head>
 <body>
   <div class="gsr-root-wrap"></div>
+
+  <div id="annotation-toolbar">
+    <button id="highlight-btn" class="toolbar-button" data-tooltip="Highlight">
+      <span class="material-symbols-outlined">ink_highlighter</span>
+    </button>
+    <div id="color-picker">
+      <button id="color-picker-btn" class="toolbar-button" data-tooltip="Choose Color">
+        <span class="material-symbols-outlined">palette</span>
+      </button>
+      <div id="color-popup">
+        <button class="color-option" style="background-color: yellow;" data-color="yellow"></button>
+        <button class="color-option" style="background-color: greenyellow;" data-color="greenyellow"></button>
+        <button class="color-option" style="background-color: cyan;" data-color="cyan"></button>
+        <button class="color-option" style="background-color: magenta;" data-color="magenta"></button>
+        <button class="color-option" style="background-color: red;" data-color="red"></button>
+      </div>
+    </div>
+    <button id="erase-btn" class="toolbar-button" data-tooltip="Erase Highlights">
+      <span class="material-symbols-outlined">ink_eraser</span>
+    </button>
+    <button id="erase-all-btn" class="toolbar-button" data-tooltip="Erase All">
+      <span class="material-symbols-outlined">delete</span>
+    </button>
+    <button id="support-btn" class="toolbar-button" data-tooltip="Support">
+      <span class="material-symbols-outlined">star</span>
+    </button>
+  </div>
 </body>
 </html>
