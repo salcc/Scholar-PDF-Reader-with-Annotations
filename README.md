@@ -42,8 +42,8 @@ The extension should now be installed and ready to use!
 
 Note that the extension will not automatically update when new versions are released. To update the extension, download the latest release and repeat the installation steps. You can watch the GitHub repository to receive notifications of new releases.
 
-[!CAUTION]
-> It is possible that all annotations will be lost when reloading the extension to update. To avoid losing annotations, export them before updating and import them after the update through the settings page.
+> [!CAUTION]
+> Annotations may be lost when updating or reloading the extension. Export them in settings beforehand, then import them afterward to prevent data loss.
 
 ## Planned Features
 
