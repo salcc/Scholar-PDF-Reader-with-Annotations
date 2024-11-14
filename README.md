@@ -42,6 +42,9 @@ The extension should now be installed and ready to use!
 
 Note that the extension will not automatically update when new versions are released. To update the extension, download the latest release and repeat the installation steps. You can watch the GitHub repository to receive notifications of new releases.
 
+[!CAUTION]
+> It is possible that all annotations will be lost when reloading the extension to update. To avoid losing annotations, export them before updating and import them after the update through the settings page.
+
 ## Planned Features
 
 The following features are planned for future releases:
@@ -49,7 +52,7 @@ The following features are planned for future releases:
 - Local annotation storage through direct PDF file modification.
 - Drawing tools.
 - Text comments.
-- Annotation management interface for selective storage cleanup, annotation file import/export, and annotation transfer between PDF files.
+- Add more functionalities to the settings page, such as annotation transfer between PDF files and selective removal.
 
 ## Implementation Questions
 

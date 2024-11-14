@@ -173,7 +173,6 @@ function setupButtonHandlers(colorPickerManager) {
         colorPickerManager.updateButtonStates();
         colorPickerManager.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
     });
-
     document.getElementById(TOOLS.draw.id).addEventListener('click', alertNotImplemented);
     document.getElementById(TOOLS.text.id).addEventListener('click', alertNotImplemented);
 
@@ -186,6 +185,11 @@ function setupButtonHandlers(colorPickerManager) {
     });
 
     document.getElementById('erase-all-btn').addEventListener('click', eraseAllAnnotations);
+    
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+    });
+
     document.getElementById('star-btn').addEventListener('click', () => {
         chrome.tabs.create({ url: 'https://github.com/salcc/Scholar-PDF-Reader-with-Annotations' });
     });

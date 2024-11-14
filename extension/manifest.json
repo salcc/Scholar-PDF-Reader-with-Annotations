@@ -106,6 +106,7 @@
             ]
         }
     ],
+    "options_page": "annotation/settings.html",
     "author": {
         "email": "mcomajoancara@gmail.com"
     }
