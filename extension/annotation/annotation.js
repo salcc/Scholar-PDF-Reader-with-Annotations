@@ -454,25 +454,29 @@ function eraseAnnotation(groupId) {
 }
 
 function eraseAllAnnotations() {
-    chrome.storage.local.get([pdfUrl], function (result) {
-        if (chrome.runtime.lastError) {
-            console.error('Error loading annotations:', chrome.runtime.lastError);
-            return;
-        }
-
-        const savedAnnotations = result[pdfUrl] || [];
-        savedAnnotations.forEach(group => {
-            removeHighlightGroup(group);
-        });
-
-        chrome.storage.local.remove([pdfUrl], function () {
+    if (confirm('Are you sure you want to erase all annotations from this PDF?')) {
+        chrome.storage.local.get([pdfUrl], function (result) {
             if (chrome.runtime.lastError) {
-                console.error('Error removing annotations:', chrome.runtime.lastError);
-            } else {
-                console.log('All annotations removed for ' + pdfUrl);
+                console.error('Error loading annotations:', chrome.runtime.lastError);
+                return;
             }
+
+            const savedAnnotations = result[pdfUrl] || [];
+            savedAnnotations.forEach(group => {
+                removeHighlightGroup(group);
+            });
+
+            chrome.storage.local.remove([pdfUrl], function () {
+                if (chrome.runtime.lastError) {
+                    console.error('Error removing annotations:', chrome.runtime.lastError);
+                } else {
+                    console.log('All annotations removed for ' + pdfUrl);
+                }
+            });
         });
-    });
+    } else {
+        console.log('Erase all annotations cancelled');
+    }
 }
 
 function findNodeByXPath(xpath) {
