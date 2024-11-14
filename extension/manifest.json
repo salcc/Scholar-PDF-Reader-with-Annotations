@@ -23,7 +23,7 @@
         "<all_urls>"
     ],
     "background": {
-        "service_worker": "annotation-background.js",
+        "service_worker": "annotation/background.js",
         "type": "module"
     },
     "content_scripts": [
@@ -73,7 +73,7 @@
             ],
             "all_frames": true,
             "js": [
-                "annotation-content.js"
+                "annotation/content.js"
             ],
             "run_at": "document_end"
         }

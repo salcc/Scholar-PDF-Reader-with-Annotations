@@ -1,4 +1,4 @@
-import './background-compiled.js';
+import '../background-compiled.js';
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "getPdfUrl") {
