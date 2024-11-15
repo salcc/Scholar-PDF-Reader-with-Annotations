@@ -143,7 +143,12 @@ function initializeAnnotation() {
     // Set up message listener for PDF URL
     window.addEventListener("message", (event) => {
         if (event.data.type === "FROM_CONTENT_SCRIPT") {
-            pdfUrl = event.data.pdfUrl;
+            const receivedPdfUrl = event.data.pdfUrl;
+            if (receivedPdfUrl === '__proto__' || receivedPdfUrl === 'constructor' || receivedPdfUrl === 'prototype') {
+                console.error('Invalid PDF URL received:', receivedPdfUrl);
+                return;
+            }
+            pdfUrl = receivedPdfUrl;
             console.log('PDF URL received:', pdfUrl);
         }
     }, false);
