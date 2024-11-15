@@ -318,7 +318,7 @@ function saveAnnotation(groupId, nodes) {
             if (chrome.runtime.lastError) {
                 console.error('Error saving annotations:', chrome.runtime.lastError);
             } else {
-                console.log('Annotation saved for ' + pdfUrl + ':', annotation);
+                console.log('Annotation saved for %s:', pdfUrl, annotation);
             }
         });
     });
