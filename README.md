@@ -3,7 +3,8 @@
 This extension adds annotation capabilities to the Google Scholar PDF Reader extension. The extended features include:
 
 - Highlight text with colors (yellow, green, blue, pink, red).
-- Easily remove individual annotations or clear them all at once. 
+- Easily remove individual annotations or clear them all at once.
+- Import and export annotations into a JSON file.
 
 Currently, annotations are stored in the browser's local storage and associated with each document URL. The PDF files are not modified, but annotations persist across browser sessions.
 
