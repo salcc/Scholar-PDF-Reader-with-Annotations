@@ -3,9 +3,11 @@
         const iframeUrl = chrome.runtime.getURL("reader.html");
         const iframe = document.querySelector(`iframe[src="${iframeUrl}"]`);
 
-        iframe.addEventListener('load', () => {
-            iframe.contentWindow.postMessage({ type: "FROM_CONTENT_SCRIPT", pdfUrl: pdfUrl }, "*");
-        });
+        if (iframe) {
+            iframe.addEventListener('load', () => {
+                iframe.contentWindow.postMessage({ type: "FROM_CONTENT_SCRIPT", pdfUrl: pdfUrl }, "*");
+            });
+        }
     }
 
     chrome.runtime.onMessage.addListener((message) => {
