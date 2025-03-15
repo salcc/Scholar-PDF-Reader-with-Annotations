@@ -564,6 +564,11 @@ class ColorPickerManager {
                     // Cycle to next color for the active tool
                     this.cycleToNextColor();
                     break;
+                
+                case 'escape':
+                    // Deactivate all tools
+                    this.deactivateAllTools();
+                    break;
                     
                 // Color selection shortcuts (1-5)
                 case '1':
@@ -577,6 +582,25 @@ class ColorPickerManager {
                     break;
             }
         });
+    }
+    
+    // Deactivate all tools (for Escape key)
+    deactivateAllTools() {
+        let wasAnyToolActive = false;
+        
+        // Check if any tool was active
+        Object.keys(this.activeTools).forEach(key => {
+            if (this.activeTools[key]) {
+                wasAnyToolActive = true;
+            }
+            this.activeTools[key] = false;
+        });
+        
+        // Only update UI if we actually deactivated something
+        if (wasAnyToolActive) {
+            this.updateButtonStates();
+            this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+        }
     }
     
     // Activate a specific tool (now handles all tools including eraser)
