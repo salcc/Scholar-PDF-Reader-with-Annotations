@@ -58,185 +58,16 @@ class ColorPickerManager {
         this.isDraggingSV = false;
         this.activePickerTool = null;
         
+        // Add history stacks for undo/redo
+        this.undoStack = [];
+        this.redoStack = [];
+        
         // Add global event listeners for drag operations
         document.addEventListener('mousemove', this.handleMouseMove.bind(this));
         document.addEventListener('mouseup', this.handleMouseUp.bind(this));
         
         // Set up keyboard shortcuts
         this.setupKeyboardShortcuts();
-    }
-    
-    // Set up keyboard shortcuts for tools and color cycling
-    setupKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger shortcuts if user is typing in an input field or contenteditable element
-            if (e.target.tagName === 'INPUT' || 
-                e.target.tagName === 'TEXTAREA' || 
-                e.target.isContentEditable) {
-                return;
-            }
-            
-            // Handle different shortcuts
-            switch(e.key.toLowerCase()) {
-                case 'h':
-                    // Activate/deactivate highlight tool
-                    this.activateTool('highlight');
-                    break;
-                    
-                case 'd':
-                    // Activate/deactivate draw tool (not implemented)
-                    this.activateTool('draw');
-                    break;
-                    
-                case 't':
-                    // Activate/deactivate text tool (not implemented)
-                    this.activateTool('text');
-                    break;
-                    
-                case 'e':
-                    // Activate/deactivate erase tool
-                    this.activateTool('erase');
-                    break;
-                    
-                case 'c':
-                    // Cycle to next color for the active tool
-                    this.cycleToNextColor();
-                    break;
-                    
-                // Color selection shortcuts (1-5)
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                    // Get the color index (0-4) from the key (1-5)
-                    const colorIndex = parseInt(e.key) - 1;
-                    this.setColorByIndex(colorIndex);
-                    break;
-            }
-        });
-    }
-    
-    // Set color by index (for number key shortcuts 1-5)
-    setColorByIndex(index) {
-        // Determine which tool is active
-        let activeTool = null;
-        
-        if (this.activeTools.isHighlighting) {
-            activeTool = 'highlight';
-        } else if (this.activeTools.isDrawing) {
-            activeTool = 'draw';
-        } else if (this.activeTools.isTexting) {
-            activeTool = 'text';
-        }
-        
-        // If no color tool is active, do nothing
-        if (!activeTool) return;
-        
-        // Get colors for the active tool
-        const colors = TOOLS[activeTool].colors;
-        
-        // Check if the index is valid
-        if (index >= 0 && index < colors.length) {
-            const newColor = colors[index];
-            
-            // Update current color
-            this.currentColors[activeTool] = newColor;
-            
-            // Update UI
-            const popup = document.getElementById(`${activeTool}-color-popup`);
-            const colorOption = popup.querySelector(`.color-option[data-color="${newColor}"]`);
-            
-            // If we found the color option, update its active state
-            if (colorOption) {
-                this.updateActiveColor(activeTool, colorOption);
-            }
-        }
-    }
-    
-    // Activate a specific tool (now handles all tools including eraser)
-    activateTool(toolType) {
-        // Determine the state key based on tool type
-        let toolStateKey;
-        if (toolType === 'erase') {
-            toolStateKey = 'isErasing';
-        } else {
-            toolStateKey = `is${toolType.charAt(0).toUpperCase() + toolType.slice(1)}ing`;
-        }
-        
-        // Check if this tool is already active - if so, deactivate it (toggle behavior)
-        if (this.activeTools[toolStateKey]) {
-            this.activeTools[toolStateKey] = false;
-            this.updateButtonStates();
-            this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
-            return;
-        }
-        
-        // For unimplemented tools, show an alert
-        if ((toolType === 'draw' || toolType === 'text')) {
-            alert('This feature is not implemented yet!');
-            return;
-        }
-        
-        // Reset all tool states
-        Object.keys(this.activeTools).forEach(key => {
-            this.activeTools[key] = false;
-        });
-        
-        // Activate the requested tool
-        this.activeTools[toolStateKey] = true;
-        
-        // Update UI
-        this.updateButtonStates();
-        this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
-    }
-    
-    // Cycle to the next color for the active tool
-    cycleToNextColor() {
-        // Determine which tool is active
-        let activeTool = null;
-        
-        if (this.activeTools.isHighlighting) {
-            activeTool = 'highlight';
-        } else if (this.activeTools.isDrawing) {
-            activeTool = 'draw';
-        } else if (this.activeTools.isTexting) {
-            activeTool = 'text';
-        }
-        
-        // If no color tool is active, do nothing
-        if (!activeTool) return;
-        
-        const colors = TOOLS[activeTool].colors;
-        
-        // Find the current color's index
-        let currentIndex = -1;
-        const currentColor = this.currentColors[activeTool];
-        
-        // Check if current color is a predefined color
-        for (let i = 0; i < colors.length; i++) {
-            if (colors[i] === currentColor) {
-                currentIndex = i;
-                break;
-            }
-        }
-        
-        // If using a custom color or the last predefined color, cycle to the first color
-        // Otherwise, move to the next color
-        const nextIndex = (currentIndex === -1 || currentIndex === colors.length - 1) ? 0 : currentIndex + 1;
-        const nextColor = colors[nextIndex];
-        
-        // Update the current color
-        this.currentColors[activeTool] = nextColor;
-        
-        // Update the UI
-        const popup = document.getElementById(`${activeTool}-color-popup`);
-        const colorOption = popup.querySelector(`.color-option[data-color="${nextColor}"]`);
-        
-        // If we found the color option, update its active state
-        if (colorOption) {
-            this.updateActiveColor(activeTool, colorOption);
-        }
     }
     
     // Convert HSV to RGB
@@ -674,11 +505,368 @@ class ColorPickerManager {
             document.body.style.cursor = isTextElement ? 'text' : 'default';
         }
     }
+    
+    // Set up keyboard shortcuts for tools and color cycling
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts if user is typing in an input field or contenteditable element
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'TEXTAREA' || 
+                e.target.isContentEditable) {
+                return;
+            }
+            
+            // Check for Ctrl/Cmd + Z (Undo) and Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z (Redo)
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key.toLowerCase() === 'z') {
+                    if (e.shiftKey) {
+                        // Ctrl/Cmd + Shift + Z for Redo
+                        e.preventDefault();
+                        this.redo();
+                        return;
+                    } else {
+                        // Ctrl/Cmd + Z for Undo
+                        e.preventDefault();
+                        this.undo();
+                        return;
+                    }
+                } else if (e.key.toLowerCase() === 'y') {
+                    // Ctrl/Cmd + Y for Redo
+                    e.preventDefault();
+                    this.redo();
+                    return;
+                }
+            }
+            
+            // Handle different shortcuts
+            switch(e.key.toLowerCase()) {
+                case 'h':
+                    // Activate/deactivate highlight tool
+                    this.activateTool('highlight');
+                    break;
+                    
+                case 'd':
+                    // Activate/deactivate draw tool (not implemented)
+                    this.activateTool('draw');
+                    break;
+                    
+                case 't':
+                    // Activate/deactivate text tool (not implemented)
+                    this.activateTool('text');
+                    break;
+                    
+                case 'e':
+                    // Activate/deactivate erase tool
+                    this.activateTool('erase');
+                    break;
+                    
+                case 'c':
+                    // Cycle to next color for the active tool
+                    this.cycleToNextColor();
+                    break;
+                    
+                // Color selection shortcuts (1-5)
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                    // Get the color index (0-4) from the key (1-5)
+                    const colorIndex = parseInt(e.key) - 1;
+                    this.setColorByIndex(colorIndex);
+                    break;
+            }
+        });
+    }
+    
+    // Activate a specific tool (now handles all tools including eraser)
+    activateTool(toolType) {
+        // Determine the state key based on tool type
+        let toolStateKey;
+        if (toolType === 'erase') {
+            toolStateKey = 'isErasing';
+        } else {
+            toolStateKey = `is${toolType.charAt(0).toUpperCase() + toolType.slice(1)}ing`;
+        }
+        
+        // Check if this tool is already active - if so, deactivate it (toggle behavior)
+        if (this.activeTools[toolStateKey]) {
+            this.activeTools[toolStateKey] = false;
+            this.updateButtonStates();
+            this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+            return;
+        }
+        
+        // For unimplemented tools, show an alert
+        if ((toolType === 'draw' || toolType === 'text')) {
+            alert('This feature is not implemented yet!');
+            return;
+        }
+        
+        // Reset all tool states
+        Object.keys(this.activeTools).forEach(key => {
+            this.activeTools[key] = false;
+        });
+        
+        // Activate the requested tool
+        this.activeTools[toolStateKey] = true;
+        
+        // Update UI
+        this.updateButtonStates();
+        this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+    }
+    
+    // Set color by index (for number key shortcuts 1-5)
+    setColorByIndex(index) {
+        // Determine which tool is active
+        let activeTool = null;
+        
+        if (this.activeTools.isHighlighting) {
+            activeTool = 'highlight';
+        } else if (this.activeTools.isDrawing) {
+            activeTool = 'draw';
+        } else if (this.activeTools.isTexting) {
+            activeTool = 'text';
+        }
+        
+        // If no color tool is active, do nothing
+        if (!activeTool) return;
+        
+        // Get colors for the active tool
+        const colors = TOOLS[activeTool].colors;
+        
+        // Check if the index is valid
+        if (index >= 0 && index < colors.length) {
+            const newColor = colors[index];
+            
+            // Update current color
+            this.currentColors[activeTool] = newColor;
+            
+            // Update UI
+            const popup = document.getElementById(`${activeTool}-color-popup`);
+            const colorOption = popup.querySelector(`.color-option[data-color="${newColor}"]`);
+            
+            // If we found the color option, update its active state
+            if (colorOption) {
+                this.updateActiveColor(activeTool, colorOption);
+            }
+        }
+    }
+    
+    // Cycle to the next color for the active tool
+    cycleToNextColor() {
+        // Determine which tool is active
+        let activeTool = null;
+        
+        if (this.activeTools.isHighlighting) {
+            activeTool = 'highlight';
+        } else if (this.activeTools.isDrawing) {
+            activeTool = 'draw';
+        } else if (this.activeTools.isTexting) {
+            activeTool = 'text';
+        }
+        
+        // If no color tool is active, do nothing
+        if (!activeTool) return;
+        
+        const colors = TOOLS[activeTool].colors;
+        
+        // Find the current color's index
+        let currentIndex = -1;
+        const currentColor = this.currentColors[activeTool];
+        
+        // Check if current color is a predefined color
+        for (let i = 0; i < colors.length; i++) {
+            if (colors[i] === currentColor) {
+                currentIndex = i;
+                break;
+            }
+        }
+        
+        // If using a custom color or the last predefined color, cycle to the first color
+        // Otherwise, move to the next color
+        const nextIndex = (currentIndex === -1 || currentIndex === colors.length - 1) ? 0 : currentIndex + 1;
+        const nextColor = colors[nextIndex];
+        
+        // Update the current color
+        this.currentColors[activeTool] = nextColor;
+        
+        // Update the UI
+        const popup = document.getElementById(`${activeTool}-color-popup`);
+        const colorOption = popup.querySelector(`.color-option[data-color="${nextColor}"]`);
+        
+        // If we found the color option, update its active state
+        if (colorOption) {
+            this.updateActiveColor(activeTool, colorOption);
+        }
+    }
+    
+    // Add an action to the undo history
+    addToHistory(action) {
+        // Clear redo stack when a new action is performed
+        this.redoStack = [];
+        this.undoStack.push(action);
+    }
+
+    // Perform an undo operation
+    undo() {
+        if (this.undoStack.length === 0) return;
+        
+        const action = this.undoStack.pop();
+        this.redoStack.push(action);
+        
+        console.log('Undoing action:', action);
+        
+        if (action.type === 'highlight') {
+            // Undo a highlight action by removing the highlight
+            this.removeHighlightById(action.groupId);
+        } 
+        else if (action.type === 'erase') {
+            // Undo an erase action by restoring the highlights
+            this.restoreHighlights(action.highlightGroups);
+        }
+        else if (action.type === 'eraseAll') {
+            // Undo an eraseAll action by restoring all highlights
+            this.restoreHighlights(action.highlightGroups);
+        }
+    }
+
+    // Perform a redo operation
+    redo() {
+        if (this.redoStack.length === 0) return;
+        
+        const action = this.redoStack.pop();
+        this.undoStack.push(action);
+        
+        console.log('Redoing action:', action);
+        
+        if (action.type === 'highlight') {
+            // Redo a highlight action by recreating the highlight
+            this.recreateHighlight(action);
+        } 
+        else if (action.type === 'erase') {
+            // Redo an erase action by removing the highlights again
+            this.removeHighlightById(action.groupId);
+        }
+        else if (action.type === 'eraseAll') {
+            // Redo an eraseAll action by removing all highlights again
+            action.highlightGroups.forEach(group => {
+                this.removeHighlightById(group.id);
+            });
+        }
+    }
+
+    // Remove a highlight by its groupId
+    removeHighlightById(groupId) {
+        chrome.storage.local.get([pdfUrl], function (result) {
+            if (chrome.runtime.lastError) {
+                console.error('Error loading annotations:', chrome.runtime.lastError);
+                return;
+            }
+
+            const savedAnnotations = result[pdfUrl] || [];
+            const groupIndex = savedAnnotations.findIndex(group => group.id === groupId);
+            
+            if (groupIndex !== -1) {
+                const group = savedAnnotations[groupIndex];
+                
+                // Remove highlight spans from DOM
+                document.querySelectorAll(`[data-group-id="${groupId}"]`).forEach(span => {
+                    const parent = span.parentNode;
+                    const textContent = span.textContent;
+                    const textNode = document.createTextNode(textContent);
+                    parent.replaceChild(textNode, span);
+                });
+                
+                // Remove from storage
+                savedAnnotations.splice(groupIndex, 1);
+                chrome.storage.local.set({ [pdfUrl]: savedAnnotations });
+                
+                // Normalize to combine adjacent text nodes
+                document.body.normalize();
+            }
+        });
+    }
+
+    // Restore highlights that were previously erased
+    restoreHighlights(highlightGroups) {
+        chrome.storage.local.get([pdfUrl], function (result) {
+            if (chrome.runtime.lastError) {
+                console.error('Error loading annotations:', chrome.runtime.lastError);
+                return;
+            }
+
+            const savedAnnotations = result[pdfUrl] || [];
+            
+            // Add all groups back to storage
+            highlightGroups.forEach(group => {
+                if (!savedAnnotations.some(existing => existing.id === group.id)) {
+                    savedAnnotations.push(group);
+                }
+            });
+            
+            chrome.storage.local.set({ [pdfUrl]: savedAnnotations }, function() {
+                // After saving, reapply the highlights to the page
+                highlightGroups.forEach(group => {
+                    const pageElements = document.querySelectorAll('.gsr-page');
+                    pageElements.forEach(pageElement => {
+                        const textContainer = pageElement.querySelector('.gsr-text-ctn');
+                        if (textContainer) {
+                            group.nodes.forEach(nodeInfo => {
+                                const node = findNodeInPage(textContainer, nodeInfo.xpath, nodeInfo.text);
+                                if (node) {
+                                    highlightNode(node, nodeInfo.text, group.color || currentColor, group.id);
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    // Recreate a highlight that was previously removed
+    recreateHighlight(action) {
+        chrome.storage.local.get([pdfUrl], function (result) {
+            if (chrome.runtime.lastError) {
+                console.error('Error loading annotations:', chrome.runtime.lastError);
+                return;
+            }
+
+            const savedAnnotations = result[pdfUrl] || [];
+            
+            // Add the highlight group back to storage if it doesn't exist
+            if (!savedAnnotations.some(group => group.id === action.groupId)) {
+                savedAnnotations.push(action.highlightGroup);
+                
+                chrome.storage.local.set({ [pdfUrl]: savedAnnotations }, function() {
+                    // After saving, reapply the highlight to the page
+                    const group = action.highlightGroup;
+                    const pageElements = document.querySelectorAll('.gsr-page');
+                    
+                    pageElements.forEach(pageElement => {
+                        const textContainer = pageElement.querySelector('.gsr-text-ctn');
+                        if (textContainer) {
+                            group.nodes.forEach(nodeInfo => {
+                                const node = findNodeInPage(textContainer, nodeInfo.xpath, nodeInfo.text);
+                                if (node) {
+                                    highlightNode(node, nodeInfo.text, group.color || currentColor, group.id);
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+        });
+    }
 }
 
 function initializeAnnotation() {
     console.log('Initializing annotation...');
     const colorPickerManager = new ColorPickerManager();
+    
+    // Store the instance globally for access from other functions
+    window.colorPickerManagerInstance = colorPickerManager;
 
     // Set up message listener for PDF URL
     window.addEventListener("message", (event) => {
@@ -713,20 +901,14 @@ function setupButtonHandlers(colorPickerManager) {
 
     // Tool buttons
     document.getElementById(TOOLS.highlight.id).addEventListener('click', () => {
-        colorPickerManager.activeTools.isHighlighting = !colorPickerManager.activeTools.isHighlighting;
-        colorPickerManager.activeTools.isErasing = false;
-        colorPickerManager.updateButtonStates();
-        colorPickerManager.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+        colorPickerManager.activateTool('highlight');
     });
     document.getElementById(TOOLS.draw.id).addEventListener('click', alertNotImplemented);
     document.getElementById(TOOLS.text.id).addEventListener('click', alertNotImplemented);
 
     // Other buttons
     document.getElementById('erase-btn').addEventListener('click', () => {
-        colorPickerManager.activeTools.isErasing = !colorPickerManager.activeTools.isErasing;
-        colorPickerManager.activeTools.isHighlighting = false;
-        colorPickerManager.updateButtonStates();
-        colorPickerManager.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+        colorPickerManager.activateTool('erase');
     });
 
     document.getElementById('erase-all-btn').addEventListener('click', eraseAllAnnotations);
@@ -831,13 +1013,14 @@ function highlightRange(range, groupId, color) {
         }
     });
 
-    saveAnnotation(groupId, highlightedNodes);
+    // Save annotation and record in history
+    saveAnnotation(groupId, highlightedNodes, color);
 }
 
-function saveAnnotation(groupId, nodes) {
+function saveAnnotation(groupId, nodes, color) {
     const annotation = {
         id: groupId,
-        color: nodes[0].style.backgroundColor,
+        color: color,
         nodes: nodes.map(node => ({
             text: node.textContent,
             xpath: getXPath(node),
@@ -864,6 +1047,18 @@ function saveAnnotation(groupId, nodes) {
                 console.error('Error saving annotations:', chrome.runtime.lastError);
             } else {
                 console.log('Annotation saved for %s:', pdfUrl, annotation);
+                
+                // Add to history for undo/redo
+                const historyAction = {
+                    type: 'highlight',
+                    groupId: groupId,
+                    highlightGroup: annotation
+                };
+                
+                // Access the colorPickerManager instance
+                if (window.colorPickerManagerInstance) {
+                    window.colorPickerManagerInstance.addToHistory(historyAction);
+                }
             }
         });
     });
@@ -983,6 +1178,16 @@ function eraseAnnotation(groupId) {
         if (groupIndex !== -1) {
             const group = savedAnnotations[groupIndex];
             
+            // Save to history before removing
+            if (window.colorPickerManagerInstance) {
+                const historyAction = {
+                    type: 'erase',
+                    groupId: groupId,
+                    highlightGroups: [group]
+                };
+                window.colorPickerManagerInstance.addToHistory(historyAction);
+            }
+            
             removeHighlightGroup(group);
 
             savedAnnotations.splice(groupIndex, 1);
@@ -1007,6 +1212,16 @@ function eraseAllAnnotations() {
             }
 
             const savedAnnotations = result[pdfUrl] || [];
+            
+            // Save to history before removing all
+            if (savedAnnotations.length > 0 && window.colorPickerManagerInstance) {
+                const historyAction = {
+                    type: 'eraseAll',
+                    highlightGroups: [...savedAnnotations]  // Clone the array
+                };
+                window.colorPickerManagerInstance.addToHistory(historyAction);
+            }
+            
             savedAnnotations.forEach(group => {
                 removeHighlightGroup(group);
             });

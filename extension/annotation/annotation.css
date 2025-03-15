@@ -126,8 +126,6 @@
 .color-option.active {
     border-color: #fff;
 }
-
-/* Add this to extension/annotation/annotation.css */
 .color-option.custom-color {
     position: relative;
     background-color: #ffffff; /* Will be overridden by the current custom color */
