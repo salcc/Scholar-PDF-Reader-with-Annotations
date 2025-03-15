@@ -38,14 +38,325 @@ class ColorPickerManager {
             draw: TOOLS.draw.colors[0],
             text: TOOLS.text.colors[0]
         };
+        
+        // Custom colors for each tool
+        this.customColors = {
+            highlight: '#FF4500', // Default custom color - orange red
+            draw: '#8A2BE2',      // Default custom color - blue violet
+            text: '#20B2AA'       // Default custom color - light sea green
+        };
+        
+        // Current HSV values for each tool
+        this.hsvValues = {
+            highlight: { h: 16, s: 100, v: 100 },  // Orange-red
+            draw: { h: 271, s: 76, v: 74 },        // Blue-violet
+            text: { h: 174, s: 81, v: 70 }         // Light sea green
+        };
+        
+        // Flags for the color picker drag operations
+        this.isDraggingHue = false;
+        this.isDraggingSV = false;
+        this.activePickerTool = null;
+        
+        // Add global event listeners for drag operations
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
     }
-
+    
+    // Convert HSV to RGB
+    hsvToRgb(h, s, v) {
+        s = s / 100;
+        v = v / 100;
+        
+        let r, g, b;
+        const i = Math.floor(h / 60);
+        const f = h / 60 - i;
+        const p = v * (1 - s);
+        const q = v * (1 - f * s);
+        const t = v * (1 - (1 - f) * s);
+        
+        switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+        
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
+    }
+    
+    // Convert RGB to Hex
+    rgbToHex(r, g, b) {
+        return '#' + [r, g, b].map(c => {
+            const hex = c.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+    }
+    
+    // Convert Hex to RGB
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+    
+    // Convert RGB to HSV
+    rgbToHsv(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, v = max;
+        
+        const d = max - min;
+        s = max === 0 ? 0 : d / max;
+        
+        if (max === min) {
+            h = 0; // achromatic
+        } else {
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        
+        return {
+            h: Math.round(h * 360),
+            s: Math.round(s * 100),
+            v: Math.round(v * 100)
+        };
+    }
+    
+    // Handle mouse move for dragging operations
+    handleMouseMove(e) {
+        if (!this.isDraggingHue && !this.isDraggingSV || !this.activePickerTool) return;
+        
+        const toolType = this.activePickerTool;
+        const picker = document.getElementById(`${toolType}-color-picker`);
+        
+        if (this.isDraggingHue) {
+            const hueSlider = picker.querySelector('.hue-slider');
+            const rect = hueSlider.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            
+            // Constrain to the slider width
+            x = Math.max(0, Math.min(rect.width, x));
+            
+            // Calculate hue value (0-360)
+            const hue = Math.round((x / rect.width) * 360);
+            this.hsvValues[toolType].h = hue;
+            
+            // Update the hue slider handle position
+            const handle = hueSlider.querySelector('.hue-slider-handle');
+            handle.style.left = `${x}px`;
+            
+            // Update the saturation-value picker background color
+            const svPicker = picker.querySelector('.saturation-value-picker');
+            const hueColor = this.rgbToHex(
+                ...Object.values(this.hsvToRgb(hue, 100, 100))
+            );
+            svPicker.style.backgroundColor = hueColor;
+            
+            this.updateColorFromHsv(toolType);
+        }
+        
+        if (this.isDraggingSV) {
+            const svPicker = picker.querySelector('.saturation-value-picker');
+            const rect = svPicker.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            
+            // Constrain to the picker area
+            x = Math.max(0, Math.min(rect.width, x));
+            y = Math.max(0, Math.min(rect.height, y));
+            
+            // Calculate saturation and value
+            const s = Math.round((x / rect.width) * 100);
+            const v = Math.round(100 - (y / rect.height) * 100);
+            
+            this.hsvValues[toolType].s = s;
+            this.hsvValues[toolType].v = v;
+            
+            // Update the handle position
+            const handle = svPicker.querySelector('.picker-handle');
+            handle.style.left = `${x}px`;
+            handle.style.top = `${y}px`;
+            
+            this.updateColorFromHsv(toolType);
+        }
+    }
+    
+    // Handle mouse up to end drag operations
+    handleMouseUp() {
+        this.isDraggingHue = false;
+        this.isDraggingSV = false;
+    }
+    
+    // Update color based on current HSV values
+    updateColorFromHsv(toolType) {
+        const hsv = this.hsvValues[toolType];
+        const rgb = this.hsvToRgb(hsv.h, hsv.s, hsv.v);
+        const hex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
+        
+        // Update the custom color
+        this.customColors[toolType] = hex;
+        
+        // Update the picker UI
+        const picker = document.getElementById(`${toolType}-color-picker`);
+        const preview = picker.querySelector('.color-preview');
+        const hexInput = picker.querySelector('.hex-input');
+        const customButton = document.querySelector(`#${toolType}-color-popup .custom-color`);
+        
+        preview.style.backgroundColor = hex;
+        hexInput.value = hex;
+        customButton.style.backgroundColor = hex;
+        
+        // Always update the current color to the new custom color
+        this.currentColors[toolType] = hex;
+        
+        // Update the tool button shadow
+        const button = document.getElementById(TOOLS[toolType].id);
+        button.style.textShadow = `0 0 10px ${hex}`;
+        
+        // Update active state in the color popup
+        this.updateActiveColor(toolType, customButton);
+    }
+    
+    // Create the custom color picker UI
     createColorPicker(toolType) {
         const colors = TOOLS[toolType].colors;
         const popup = document.createElement('div');
         popup.id = `${toolType}-color-popup`;
         popup.className = 'color-popup';
         
+        // Add custom color button at the top
+        const customButton = document.createElement('button');
+        customButton.className = 'color-option custom-color';
+        customButton.setAttribute('data-color', 'custom');
+        customButton.title = "Custom color";
+        
+        // Set the button's background to the current custom color for this tool
+        customButton.style.backgroundColor = this.customColors[toolType];
+        
+        // Create custom color picker
+        const picker = document.createElement('div');
+        picker.className = 'custom-color-picker';
+        picker.id = `${toolType}-color-picker`;
+        
+        // Hue slider
+        const hueSlider = document.createElement('div');
+        hueSlider.className = 'hue-slider';
+        const hueHandle = document.createElement('div');
+        hueHandle.className = 'hue-slider-handle';
+        hueSlider.appendChild(hueHandle);
+        
+        // Saturation/Value picker
+        const svPicker = document.createElement('div');
+        svPicker.className = 'saturation-value-picker';
+        const whiteGradient = document.createElement('div');
+        whiteGradient.className = 'white-gradient';
+        const blackGradient = document.createElement('div');
+        blackGradient.className = 'black-gradient';
+        const svHandle = document.createElement('div');
+        svHandle.className = 'picker-handle';
+        svPicker.appendChild(whiteGradient);
+        svPicker.appendChild(blackGradient);
+        svPicker.appendChild(svHandle);
+        
+        // Color preview
+        const preview = document.createElement('div');
+        preview.className = 'color-preview';
+        
+        // Hex input
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'hex-input';
+        hexInput.maxLength = 7;
+        hexInput.placeholder = '#RRGGBB';
+        
+        // Add all elements to the picker
+        picker.appendChild(hueSlider);
+        picker.appendChild(svPicker);
+        picker.appendChild(preview);
+        picker.appendChild(hexInput);
+        
+        // Initialize picker UI based on current color
+        const hsv = this.hsvValues[toolType];
+        const rgb = this.hsvToRgb(hsv.h, hsv.s, hsv.v);
+        const hex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
+        
+        // Set initial positions and colors
+        const huePos = (hsv.h / 360) * 100;
+        hueHandle.style.left = `${huePos}%`;
+        
+        svPicker.style.backgroundColor = this.rgbToHex(
+            ...Object.values(this.hsvToRgb(hsv.h, 100, 100))
+        );
+        
+        svHandle.style.left = `${hsv.s}%`;
+        svHandle.style.top = `${100 - hsv.v}%`;
+        
+        preview.style.backgroundColor = hex;
+        hexInput.value = hex;
+        
+        // Add event listeners for the picker
+        hueSlider.addEventListener('mousedown', (e) => {
+            this.isDraggingHue = true;
+            this.activePickerTool = toolType;
+            this.handleMouseMove(e);
+        });
+        
+        svPicker.addEventListener('mousedown', (e) => {
+            this.isDraggingSV = true;
+            this.activePickerTool = toolType;
+            this.handleMouseMove(e);
+        });
+        
+        hexInput.addEventListener('input', (e) => {
+            const newHex = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(newHex)) {
+                const rgb = this.hexToRgb(newHex);
+                if (rgb) {
+                    const hsv = this.rgbToHsv(rgb.r, rgb.g, rgb.b);
+                    this.hsvValues[toolType] = hsv;
+                    
+                    // Update UI positions
+                    const huePos = (hsv.h / 360) * 100;
+                    hueHandle.style.left = `${huePos}%`;
+                    
+                    svPicker.style.backgroundColor = this.rgbToHex(
+                        ...Object.values(this.hsvToRgb(hsv.h, 100, 100))
+                    );
+                    
+                    svHandle.style.left = `${hsv.s}%`;
+                    svHandle.style.top = `${100 - hsv.v}%`;
+                    
+                    preview.style.backgroundColor = newHex;
+                    
+                    // Use updateColorFromHsv to update everything consistently
+                    this.updateColorFromHsv(toolType);
+                }
+            }
+        });
+        
+        // Add the picker to the custom button
+        customButton.appendChild(picker);
+        popup.appendChild(customButton);
+        
+        // Add the predefined colors
         colors.forEach(color => {
             const button = document.createElement('button');
             button.className = 'color-option';
@@ -82,10 +393,40 @@ class ColorPickerManager {
         container.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 popup.style.display = 'none';
+                
+                // Hide all color pickers
+                document.querySelectorAll('.custom-color-picker').forEach(picker => {
+                    picker.style.display = 'none';
+                });
             }, 100);
         });
-
-        popup.querySelectorAll('.color-option').forEach(option => {
+        
+        // Setup hover behavior for custom color button
+        const customButton = popup.querySelector('.custom-color');
+        const picker = customButton.querySelector('.custom-color-picker');
+        
+        customButton.addEventListener('mouseenter', () => {
+            // Hide any other open pickers first
+            document.querySelectorAll('.custom-color-picker').forEach(p => {
+                p.style.display = 'none';
+            });
+            picker.style.display = 'block';
+        });
+        
+        // Make clicking on the custom color button activate the color
+        customButton.addEventListener('click', (e) => {
+            // Only process clicks on the button itself, not the picker
+            if (e.target === customButton) {
+                this.currentColors[toolType] = this.customColors[toolType];
+                this.updateActiveColor(toolType, customButton);
+            }
+            
+            // Prevent event from bubbling
+            e.stopPropagation();
+        });
+        
+        // Handle regular color option clicks
+        popup.querySelectorAll('.color-option:not(.custom-color)').forEach(option => {
             option.addEventListener('click', (e) => {
                 this.currentColors[toolType] = e.target.getAttribute('data-color');
                 this.updateActiveColor(toolType, e.target);
@@ -104,6 +445,26 @@ class ColorPickerManager {
         
         const button = document.getElementById(TOOLS[toolType].id);
         button.style.textShadow = `0 0 10px ${this.currentColors[toolType]}`;
+        
+        // Only try to activate implemented tools
+        if (toolType === 'highlight') {
+            // Deactivate all other tools first
+            Object.keys(this.activeTools).forEach(key => {
+                this.activeTools[key] = false;
+            });
+            
+            // Activate this tool
+            this.activeTools.isHighlighting = true;
+            
+            // Update all button states
+            this.updateButtonStates();
+            
+            // Update cursor
+            this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+        } else if (toolType === 'draw' || toolType === 'text') {
+            // For unimplemented tools, show the alert but don't activate the tool
+            alert('This feature is not implemented yet!');
+        }
     }
 
     updateButtonStates() {
