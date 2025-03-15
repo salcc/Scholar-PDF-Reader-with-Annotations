@@ -61,6 +61,182 @@ class ColorPickerManager {
         // Add global event listeners for drag operations
         document.addEventListener('mousemove', this.handleMouseMove.bind(this));
         document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        
+        // Set up keyboard shortcuts
+        this.setupKeyboardShortcuts();
+    }
+    
+    // Set up keyboard shortcuts for tools and color cycling
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts if user is typing in an input field or contenteditable element
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'TEXTAREA' || 
+                e.target.isContentEditable) {
+                return;
+            }
+            
+            // Handle different shortcuts
+            switch(e.key.toLowerCase()) {
+                case 'h':
+                    // Activate/deactivate highlight tool
+                    this.activateTool('highlight');
+                    break;
+                    
+                case 'd':
+                    // Activate/deactivate draw tool (not implemented)
+                    this.activateTool('draw');
+                    break;
+                    
+                case 't':
+                    // Activate/deactivate text tool (not implemented)
+                    this.activateTool('text');
+                    break;
+                    
+                case 'e':
+                    // Activate/deactivate erase tool
+                    this.activateTool('erase');
+                    break;
+                    
+                case 'c':
+                    // Cycle to next color for the active tool
+                    this.cycleToNextColor();
+                    break;
+                    
+                // Color selection shortcuts (1-5)
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                    // Get the color index (0-4) from the key (1-5)
+                    const colorIndex = parseInt(e.key) - 1;
+                    this.setColorByIndex(colorIndex);
+                    break;
+            }
+        });
+    }
+    
+    // Set color by index (for number key shortcuts 1-5)
+    setColorByIndex(index) {
+        // Determine which tool is active
+        let activeTool = null;
+        
+        if (this.activeTools.isHighlighting) {
+            activeTool = 'highlight';
+        } else if (this.activeTools.isDrawing) {
+            activeTool = 'draw';
+        } else if (this.activeTools.isTexting) {
+            activeTool = 'text';
+        }
+        
+        // If no color tool is active, do nothing
+        if (!activeTool) return;
+        
+        // Get colors for the active tool
+        const colors = TOOLS[activeTool].colors;
+        
+        // Check if the index is valid
+        if (index >= 0 && index < colors.length) {
+            const newColor = colors[index];
+            
+            // Update current color
+            this.currentColors[activeTool] = newColor;
+            
+            // Update UI
+            const popup = document.getElementById(`${activeTool}-color-popup`);
+            const colorOption = popup.querySelector(`.color-option[data-color="${newColor}"]`);
+            
+            // If we found the color option, update its active state
+            if (colorOption) {
+                this.updateActiveColor(activeTool, colorOption);
+            }
+        }
+    }
+    
+    // Activate a specific tool (now handles all tools including eraser)
+    activateTool(toolType) {
+        // Determine the state key based on tool type
+        let toolStateKey;
+        if (toolType === 'erase') {
+            toolStateKey = 'isErasing';
+        } else {
+            toolStateKey = `is${toolType.charAt(0).toUpperCase() + toolType.slice(1)}ing`;
+        }
+        
+        // Check if this tool is already active - if so, deactivate it (toggle behavior)
+        if (this.activeTools[toolStateKey]) {
+            this.activeTools[toolStateKey] = false;
+            this.updateButtonStates();
+            this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+            return;
+        }
+        
+        // For unimplemented tools, show an alert
+        if ((toolType === 'draw' || toolType === 'text')) {
+            alert('This feature is not implemented yet!');
+            return;
+        }
+        
+        // Reset all tool states
+        Object.keys(this.activeTools).forEach(key => {
+            this.activeTools[key] = false;
+        });
+        
+        // Activate the requested tool
+        this.activeTools[toolStateKey] = true;
+        
+        // Update UI
+        this.updateButtonStates();
+        this.updateCursor({ target: document.elementFromPoint(mouseX, mouseY) });
+    }
+    
+    // Cycle to the next color for the active tool
+    cycleToNextColor() {
+        // Determine which tool is active
+        let activeTool = null;
+        
+        if (this.activeTools.isHighlighting) {
+            activeTool = 'highlight';
+        } else if (this.activeTools.isDrawing) {
+            activeTool = 'draw';
+        } else if (this.activeTools.isTexting) {
+            activeTool = 'text';
+        }
+        
+        // If no color tool is active, do nothing
+        if (!activeTool) return;
+        
+        const colors = TOOLS[activeTool].colors;
+        
+        // Find the current color's index
+        let currentIndex = -1;
+        const currentColor = this.currentColors[activeTool];
+        
+        // Check if current color is a predefined color
+        for (let i = 0; i < colors.length; i++) {
+            if (colors[i] === currentColor) {
+                currentIndex = i;
+                break;
+            }
+        }
+        
+        // If using a custom color or the last predefined color, cycle to the first color
+        // Otherwise, move to the next color
+        const nextIndex = (currentIndex === -1 || currentIndex === colors.length - 1) ? 0 : currentIndex + 1;
+        const nextColor = colors[nextIndex];
+        
+        // Update the current color
+        this.currentColors[activeTool] = nextColor;
+        
+        // Update the UI
+        const popup = document.getElementById(`${activeTool}-color-popup`);
+        const colorOption = popup.querySelector(`.color-option[data-color="${nextColor}"]`);
+        
+        // If we found the color option, update its active state
+        if (colorOption) {
+            this.updateActiveColor(activeTool, colorOption);
+        }
     }
     
     // Convert HSV to RGB
@@ -382,6 +558,9 @@ class ColorPickerManager {
         button.parentNode.insertBefore(container, button);
         container.appendChild(button);
         container.appendChild(popup);
+        
+        // Initialize the button shadow right after creating it
+        button.style.textShadow = `0 0 10px ${this.currentColors[toolType]}`;
 
         let hideTimeout;
 
