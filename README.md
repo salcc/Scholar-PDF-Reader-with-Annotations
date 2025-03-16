@@ -2,8 +2,9 @@
 
 This extension adds annotation capabilities to the Google Scholar PDF Reader extension. The extended features include:
 
-- Highlight text with colors (yellow, green, blue, pink, red).
+- Highlight text with colors (yellow, green, blue, pink, red, or custom).
 - Easily remove individual annotations or clear them all at once.
+- Undo and redo actions for annotations.
 - Import and export annotations into a JSON file.
 
 Currently, annotations are stored in the browser's local storage and associated with each document URL. The PDF files are not modified, but annotations persist across browser sessions.
@@ -46,14 +47,29 @@ Note that the extension will not automatically update when new versions are rele
 > [!CAUTION]
 > Annotations may be lost when updating or reloading the extension. Export them in settings beforehand, then import them afterward to prevent data loss.
 
+## Usage
+
+The annotation capabilities are easily accessible through the annotation toolbar. Moreover, these keyboard shortcuts can be used:
+
+- <kbd>h</kbd>: Toggle the highlight tool.
+- <kbd>d</kbd>: Toggle the draw tool.
+- <kbd>t</kbd>: Toggle the text tool.
+- <kbd>c</kbd>: Change to the next color of the active tool.
+- <kbd>e</kbd>: Toggle the erase tool.
+- <kbd>Esc</kbd>: Deactivate the active tool.
+- <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>z</kbd>: Undo the last action.
+- <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>y</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>z</kbd>: Redo the last undone action.
+
 ## Planned Features
 
 The following features are planned for future releases:
 
-- Local annotation storage through direct PDF file modification.
-- Drawing tools.
-- Text comments.
-- Add more functionalities to the settings page, such as annotation transfer between PDF files and selective removal.
+- Storage backup in the cloud (Google Drive and iCloud probably).
+- Underline and strikeout text.
+- Drawing tools (freehand, lines, shapes).
+- Text comments and sticky notes.
+- Movable and minimizable annotation bar.
+- Add more functionalities to the settings page, such as annotation transfer between PDF files and selective removal or keyboard shortcut customization.
 
 ## Implementation Questions
 
@@ -62,6 +78,9 @@ A: The original extension uses the sandbox key in the manifest.json file, which 
 
 Q: Why is the code of the original extension included in this one? Why not just make an extension that works with the original one?\
 A: Browser extensions are sandboxed and cannot directly interact with each other.
+
+Q: Why are annotations stored in the browser's local storage instead of modifying the PDF files?\
+A: Extensions cannot directly modify files on the user's computer, so an external program would possibly be needed to modify the PDF files. This is a complex feature that is not planned for the near future.
 
 If you find workarounds to these limitations, contributions are welcome!
 
