@@ -64,12 +64,12 @@ The annotation capabilities are easily accessible through the annotation toolbar
 
 The following features are planned for future releases:
 
-- Storage backup in the cloud (Google Drive and iCloud probably).
+- Annotation storage backup in the cloud (Google Drive and iCloud probably).
 - Underline and strikeout text.
 - Drawing tools (freehand, lines, shapes).
 - Text comments and sticky notes.
 - Movable and minimizable annotation bar.
-- Add more functionalities to the settings page, such as annotation transfer between PDF files and selective removal or keyboard shortcut customization.
+- Add more functionalities to the settings page, such as keyboard shortcut customization, annotation transfer between PDF files, and selective removal.
 
 ## Implementation Questions
 
