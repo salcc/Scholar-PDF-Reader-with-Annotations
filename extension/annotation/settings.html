@@ -2,78 +2,185 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Annotation Settings</title>
     <style>
+        @font-face {
+            font-family: 'Material Symbols Outlined';
+            font-style: normal;
+            src: url('MaterialSymbolsOutlined.woff2') format('woff2');
+        }
+        
+        :root {
+            --primary: #4374E0;
+            --primary-hover: #3865cc;
+            --secondary: #575757;
+            --secondary-hover: #444444;
+            --accent: #A0C3FF;
+            --text: #333333;
+            --text-secondary: #575757;
+            --success: #4caf50;
+            --error: #f44336;
+            --background: #f8f9fa;
+            --card: #ffffff;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             max-width: 800px;
-            margin: 20px auto;
+            margin: 40px auto;
             padding: 0 20px;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
         }
 
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--card);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
         }
 
         h1 {
-            color: #2c3e50;
-            margin-bottom: 30px;
+            color: var(--text);
+            margin-bottom: 32px;
+            font-weight: 700;
+            font-size: 28px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 4px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: var(--text);
         }
 
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 15px;
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
         }
 
-        button {
-            background-color: #3498db;
+        button, .file-input-label {
+            background-color: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.2s;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        button:hover, .file-input-label:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
-        button.secondary {
-            background-color: #95a5a6;
+        button:active, .file-input-label:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        button.secondary:hover {
-            background-color: #7f8c8d;
+        button.secondary, .file-input-label {
+            background-color: var(--secondary);
+        }
+
+        button.secondary:hover, .file-input-label:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .icon {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            margin-right: 8px;
         }
 
         #status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: var(--border-radius);
             display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         #status.success {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
             display: block;
         }
 
         #status.error {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--error);
+            border-left: 4px solid var(--error);
             display: block;
         }
 
@@ -81,40 +188,107 @@
             display: none;
         }
 
-        .file-input-label {
-            display: inline-block;
-            background-color: #95a5a6;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
+        .github-section {
+            background-color: rgba(67, 116, 224, 0.05);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid var(--accent);
         }
 
-        .file-input-label:hover {
-            background-color: #7f8c8d;
+        .github-content {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .github-content h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .github-buttons {
+            display: flex;
+            gap: 12px;
+            user-select: none;
+        }
+
+        .github-button {
+            background-color: #24292e;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .github-button:hover {
+            background-color: #1a1e22;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .github-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .github-buttons {
+                width: 100%;
+            }
+            
+            .github-button {
+                flex: 1;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Annotation Settings</h1>
+        <h1>Scholar PDF Reader with Annotations / Settings</h1>
         
         <div class="section">
             <h2>Backup and Restore</h2>
             <p>Export your annotations to keep them safe or import previously saved annotations.</p>
             
             <div class="button-group">
-                <button id="exportBtn">Export Annotations</button>
+                <button id="exportBtn">
+                    <span class="icon">download</span>Export Annotations
+                </button>
                 <label class="file-input-label">
-                    Import Annotations
+                    <span class="icon">upload</span>Import Annotations
                     <input type="file" id="importInput" accept=".json">
                 </label>
             </div>
         </div>
-
         <div id="status"></div>
+        
+        <div class="github-section">
+            <div class="github-content">
+                <h3>Do you find the extension useful?</h3>
+                <p>Star the repository on GitHub to show your support!</p>
+            </div>
+            <div class="github-buttons">
+                <a href="https://github.com/salcc/Scholar-PDF-Reader-with-Annotations" class="github-button" target="_blank">
+                    <span class="icon">star</span>Star Repository
+                </a>
+            </div>
+        </div>
     </div>
     <script src="settings.js"></script>
 </body>
