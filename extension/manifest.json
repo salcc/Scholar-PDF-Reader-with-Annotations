@@ -99,7 +99,8 @@
         {
             "resources": [
                 "reader.html",
-                "pdf_loader_iframe.html"
+                "pdf_loader_iframe.html",
+                "libs/pdf-lib.min.js"
             ],
             "matches": [
                 "<all_urls>"
