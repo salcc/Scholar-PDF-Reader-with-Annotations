@@ -1143,16 +1143,48 @@ function saveAnnotation(groupId, nodesWithPositions, color) {
         nodes: nodesWithPositions.map(item => ({
             text: item.span.textContent,
             xpath: getXPath(item.span),
-            position: item.position
+            offset: getTextOffset(item.span),
+            position: item.position // Needed for exporting to PDF
         }))
     };
 
     chrome.storage.local.get([pdfUrl], function (result) {
+        if (chrome.runtime.lastError) {
+            console.error('Error loading annotations:', chrome.runtime.lastError);
+            return;
+        }
+
         const savedAnnotations = result[pdfUrl] || [];
-        savedAnnotations.push(annotation);
-        chrome.storage.local.set({ [pdfUrl]: savedAnnotations });
+        const existingIndex = savedAnnotations.findIndex(group => group.id === groupId);
+
+        if (existingIndex !== -1) {
+            savedAnnotations[existingIndex] = annotation;
+        } else {
+            savedAnnotations.push(annotation);
+        }
+
+        chrome.storage.local.set({ [pdfUrl]: savedAnnotations }, function () {
+            if (chrome.runtime.lastError) {
+                console.error('Error saving annotations:', chrome.runtime.lastError);
+            } else {
+                console.log('Annotation saved for %s:', pdfUrl, annotation);
+
+                // Add to history for undo/redo
+                const historyAction = {
+                    type: 'highlight',
+                    groupId: groupId,
+                    highlightGroup: annotation
+                };
+
+                // Access the colorPickerManager instance
+                if (window.colorPickerManagerInstance) {
+                    window.colorPickerManagerInstance.addToHistory(historyAction);
+                }
+            }
+        });
     });
 }
+
 
 function getExistingHighlights(node) {
     const highlights = [];
