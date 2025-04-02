@@ -90,4 +90,6 @@ For bug reports and feature suggestions, please open an issue on GitHub. Feel fr
 
 ## Disclaimer
 
-This project is not affiliated with, supported, or endorsed by Google.
+This project is not affiliated with, supported, or endorsed by Google. Nonetheless, by installing this extension, you agree to the Google Terms of Service and Privacy Policy at https://www.google.com/intl/en/policies/.
+
+
