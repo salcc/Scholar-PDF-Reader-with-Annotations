@@ -6,6 +6,7 @@ This extension adds annotation capabilities to the Google Scholar PDF Reader ext
 - Easily remove individual annotations or clear them all at once.
 - Undo and redo actions for annotations.
 - Import and export annotations into a JSON file.
+- Export (Download) the annotated PDF.
 
 Currently, annotations are stored in the browser's local storage and associated with each document URL. The PDF files are not modified, but annotations persist across browser sessions.
 
@@ -77,7 +78,7 @@ Q: Why there is no support for Firefox or Safari?\
 A: The original extension uses the sandbox key in the manifest.json file, which is only supported by Chromium-based browsers. Firefox and Safari do not support this key, so the extension cannot be installed on those browsers. [[MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_security_policy#browser_compatibility)]
 
 Q: Why is the code of the original extension included in this one? Why not just make an extension that works with the original one?\
-A: Browser extensions are sandboxed and cannot directly interact with each other.
+A: Browser extensions are sandboxed and cannot directly interact with each other. But you can export the PDF using the button in the bottom right menu.
 
 Q: Why are annotations stored in the browser's local storage instead of modifying the PDF files?\
 A: Extensions cannot directly modify files on the user's computer, so an external program would possibly be needed to modify the PDF files. This is a complex feature that is not planned for the near future.

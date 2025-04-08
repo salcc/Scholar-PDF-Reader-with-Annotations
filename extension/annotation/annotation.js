@@ -920,6 +920,99 @@ function initializeAnnotation() {
     observePageChanges();
 }
 
+function hexToPdfRgb(colorStr) {
+    const namedColors = {
+        "yellow": "#FFFF00",
+        "greenyellow": "#ADFF2F",
+        "cyan": "#00FFFF",
+        "magenta": "#FF00FF",
+        "red": "#FF0000",
+        "white": "#FFFFFF",
+        "black": "#000000",
+        "green": "#008000",
+        "blue": "#0000FF",
+    };
+
+    // Convert named colors to hex
+    if (namedColors[colorStr.toLowerCase()]) {
+        colorStr = namedColors[colorStr.toLowerCase()];
+    }
+
+    // Validate hex color
+    const hexMatch = colorStr.match(/^#?([a-fA-F0-9]{6})$/);
+    if (!hexMatch) {
+        console.warn(`Invalid color: ${colorStr}, defaulting to yellow.`);
+        colorStr = "#FFFF00";  // default fallback
+    }
+
+    const hex = colorStr.replace('#', '');
+    const r = parseInt(hex.substring(0,2), 16) / 255;
+    const g = parseInt(hex.substring(2,4), 16) / 255;
+    const b = parseInt(hex.substring(4,6), 16) / 255;
+    return PDFLib.rgb(r, g, b);
+}
+
+async function exportAnnotatedPdf() {
+    if (!pdfUrl) {
+        alert('No PDF loaded.');
+        return;
+    }
+
+    const pdfData = await fetch(pdfUrl).then(res => res.arrayBuffer());
+    const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
+    const pages = pdfDoc.getPages();
+
+    chrome.storage.local.get([pdfUrl], async (result) => {
+        const annotations = result[pdfUrl] || [];
+
+        annotations.forEach(annotation => {
+            annotation.nodes.forEach(node => {
+                const pos = node.position;
+                const pageIndex = pos.pageIndex;
+
+                if (pageIndex < pages.length) {
+                    const pdfPage = pages[pageIndex];
+                    const { width: pdfWidth, height: pdfHeight } = pdfPage.getSize();
+
+                    const x = (pos.xPercent / 100) * pdfWidth;
+                    const y = pdfHeight - ((pos.yPercent / 100) * pdfHeight) - ((pos.heightPercent / 100) * pdfHeight);
+                    const width = (pos.widthPercent / 100) * pdfWidth;
+                    const height = (pos.heightPercent / 100) * pdfHeight;
+
+                    pdfPage.drawRectangle({
+                        x, y, width, height,
+                        color: hexToPdfRgb(annotation.color),
+                        opacity: 0.4,
+                        borderWidth: 0
+                    });
+                }
+            });
+        });
+
+        const pdfBytes = await pdfDoc.save();
+        download(pdfBytes, "annotated.pdf");
+    });
+}
+
+
+function download(data, filename) {
+    const blob = new Blob([data], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Helper: Extract page number from XPath (implement this according to your XPath structure)
+function extractPageNumberFromXPath(xpath) {
+    // Example: '/div[1]/div[2]' -> page 1 (0-indexed)
+    const match = xpath.match(/div\[(\d+)\]/);
+    return match ? parseInt(match[1]) - 1 : 0;
+}
+
+
 function setupButtonHandlers(colorPickerManager) {
     const alertNotImplemented = () => alert('This feature is not implemented yet!');
 
@@ -940,6 +1033,8 @@ function setupButtonHandlers(colorPickerManager) {
     document.getElementById('settings-btn').addEventListener('click', () => {
         chrome.runtime.openOptionsPage();
     });
+    
+    document.getElementById('export-btn').addEventListener('click', exportAnnotatedPdf);
 
     document.getElementById('star-btn').addEventListener('click', () => {
         chrome.tabs.create({ url: 'https://github.com/salcc/Scholar-PDF-Reader-with-Annotations' });
@@ -1041,14 +1136,15 @@ function highlightRange(range, groupId, color) {
     saveAnnotation(groupId, highlightedNodes, color);
 }
 
-function saveAnnotation(groupId, nodes, color) {
+function saveAnnotation(groupId, nodesWithPositions, color) {
     const annotation = {
         id: groupId,
         color: color,
-        nodes: nodes.map(node => ({
-            text: node.textContent,
-            xpath: getXPath(node),
-            offset: getTextOffset(node)
+        nodes: nodesWithPositions.map(item => ({
+            text: item.span.textContent,
+            xpath: getXPath(item.span),
+            offset: getTextOffset(item.span),
+            position: item.position // Needed for exporting to PDF
         }))
     };
 
@@ -1060,6 +1156,7 @@ function saveAnnotation(groupId, nodes, color) {
 
         const savedAnnotations = result[pdfUrl] || [];
         const existingIndex = savedAnnotations.findIndex(group => group.id === groupId);
+
         if (existingIndex !== -1) {
             savedAnnotations[existingIndex] = annotation;
         } else {
@@ -1071,14 +1168,14 @@ function saveAnnotation(groupId, nodes, color) {
                 console.error('Error saving annotations:', chrome.runtime.lastError);
             } else {
                 console.log('Annotation saved for %s:', pdfUrl, annotation);
-                
+
                 // Add to history for undo/redo
                 const historyAction = {
                     type: 'highlight',
                     groupId: groupId,
                     highlightGroup: annotation
                 };
-                
+
                 // Access the colorPickerManager instance
                 if (window.colorPickerManagerInstance) {
                     window.colorPickerManagerInstance.addToHistory(historyAction);
@@ -1087,6 +1184,7 @@ function saveAnnotation(groupId, nodes, color) {
         });
     });
 }
+
 
 function getExistingHighlights(node) {
     const highlights = [];
@@ -1137,13 +1235,33 @@ function highlightTextNode(node, startOffset, endOffset, groupId, color) {
     range.setStart(node, startOffset);
     range.setEnd(node, endOffset);
 
+    const rect = range.getBoundingClientRect();
     const highlightSpan = document.createElement('span');
     highlightSpan.className = 'pdf-highlight';
     highlightSpan.style.backgroundColor = color;
     highlightSpan.dataset.groupId = groupId;
 
     range.surroundContents(highlightSpan);
-    return highlightSpan;
+
+    const pageElement = highlightSpan.closest('.gsr-page');
+    const pageRect = pageElement.getBoundingClientRect();
+
+    // Calculate relative positions (%) within the page
+    const position = {
+        xPercent: ((rect.left - pageRect.left) / pageRect.width) * 100,
+        yPercent: ((rect.top - pageRect.top) / pageRect.height) * 100,
+        widthPercent: (rect.width / pageRect.width) * 100,
+        heightPercent: (rect.height / pageRect.height) * 100,
+        pageIndex: determineCurrentPageIndex(highlightSpan)
+    };
+
+    return { span: highlightSpan, position };
+}
+
+// You need a helper to determine the PDF page index based on your DOM structure
+function determineCurrentPageIndex(node) {
+    const pageElement = node.closest('.gsr-page');
+    return Array.from(document.querySelectorAll('.gsr-page')).indexOf(pageElement);
 }
 
 function getNodesBetween(startNode, endNode, commonAncestor) {
