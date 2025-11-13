@@ -1,3 +1,11 @@
+**After one year of developing this extension, Google has finally added annotation support to the original Google Scholar PDF Reader!**
+
+**Since it now includes all the features this extension provided, this repository is now archived and will no longer be updated.**
+
+**You can continue to use the extension if you like. I hope this past year of annotations was useful!**
+
+---
+
 # Scholar PDF Reader with Annotations
 
 This extension adds annotation capabilities to the Google Scholar PDF Reader extension. The extended features include:
@@ -11,7 +19,7 @@ Currently, annotations are stored in the browser's local storage and associated 
 
 ![Screenshot](screenshot.png)
 
-The extension maintains all the functionality of the original Google Scholar PDF Reader:
+The extension maintains all the functionality of the  Google Scholar PDF Reader:
 
 - Preview references as you read. Click the in-text citation to see a summary and find the PDF.
 - Read faster with the AI outline. Get a quick overview and click on interesting bullets to jump within the paper.
@@ -20,16 +28,16 @@ The extension maintains all the functionality of the original Google Scholar PDF
 - Copy and paste common citation formats without leaving the paper.
 - Save articles to your Scholar Library to read or cite later.
 
-The annotation functionality is implemented through separate modules without modifying the original extension's code.
+The annotation functionality is implemented through separate modules without modifying the  extension's code.
 
 ## Installation
 
 The extension works with all Chromium-based browsers, including Google Chrome, Microsoft Edge, and Brave.
-Unfortunately, the original extension uses features unsupported by Firefox or Safari, so it cannot be installed on those browsers.
+Unfortunately, the  extension uses features unsupported by Firefox or Safari, so it cannot be installed on those browsers.
 
 To install the extension, follow these steps:
 
-0. Uninstall the original Google Scholar PDF Reader extension if you have it installed.
+0. Uninstall the  Google Scholar PDF Reader extension if you have it installed.
 1. [Download the latest release](https://github.com/salcc/Scholar-PDF-Reader-with-Annotations/releases/latest) ("Source code" under "Assets").
 2. Extract the ZIP file to a folder on your computer.
 3. Open the browser's extension management page:
@@ -74,9 +82,9 @@ The following features are planned for future releases:
 ## Implementation Questions
 
 Q: Why there is no support for Firefox or Safari?\
-A: The original extension uses the sandbox key in the manifest.json file, which is only supported by Chromium-based browsers. Firefox and Safari do not support this key, so the extension cannot be installed on those browsers. [[MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_security_policy#browser_compatibility)]
+A: The  extension uses the sandbox key in the manifest.json file, which is only supported by Chromium-based browsers. Firefox and Safari do not support this key, so the extension cannot be installed on those browsers. [[MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_security_policy#browser_compatibility)]
 
-Q: Why is the code of the original extension included in this one? Why not just make an extension that works with the original one?\
+Q: Why is the code of the  extension included in this one? Why not just make an extension that works with the  one?\
 A: Browser extensions are sandboxed and cannot directly interact with each other.
 
 Q: Why are annotations stored in the browser's local storage instead of modifying the PDF files?\
